@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/task-1.js",
+    "start": "node dist/task-5.js",
     "watch": "tsc --watch"
   },
   "repository": {
