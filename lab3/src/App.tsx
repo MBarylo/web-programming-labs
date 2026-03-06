@@ -1,45 +1,50 @@
+// src/App.tsx
 import { useState } from 'react';
+import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
-import type { Task } from './types/task';
-
-const initialTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Тестова задача 1',
-    description: 'Перевірка TaskList',
-    status: 'todo',
-    priority: 'high',
-    createdAt: new Date(),
-  },
-  {
-    id: '2',
-    title: 'Тестова задача 2',
-    description: '',
-    status: 'in-progress',
-    priority: 'medium',
-    createdAt: new Date(),
-  },
-];
+import type { Task, TaskStatus } from './types/task';
+import type { TaskFormData } from './components/TaskForm/TaskForm';
 
 function App() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  const handleDelete = (id: string) => {
-    console.log('delete', id);
-    setTasks(tasks.filter((t) => t.id !== id));
+  // Додаємо нову задачу
+  const handleAddTask = (data: TaskFormData) => {
+    const newTask: Task = {
+      id: String(Date.now()), // простий id
+      status: 'todo', // статус додаємо тут
+      createdAt: new Date(), // дата створення
+      ...data, // title, description, priority
+    };
+
+    setTasks((prev) => [...prev, newTask]);
+    console.log('Додано нову задачу:', newTask);
   };
 
-  const handleStatusChange = (id: string, status: Task['status']) => {
-    console.log('status', id, status);
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, status } : t)));
+  // Видалення задачі
+  const handleDelete = (id: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    console.log('Видалено задачу:', id);
+  };
+
+  // Зміна статусу
+  const handleStatusChange = (id: string, status: TaskStatus) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+    console.log('Змінено статус:', id, status);
   };
 
   return (
-    <TaskList
-      tasks={tasks}
-      onDelete={handleDelete}
-      onStatusChange={handleStatusChange}
-    />
+    <div style={{ padding: '16px' }}>
+      <h1 style={{ textAlign: 'center' }}>Мій список задач</h1>
+
+      <TaskForm onSubmit={handleAddTask} />
+
+      <TaskList
+        tasks={tasks}
+        onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
+      />
+    </div>
   );
 }
 
