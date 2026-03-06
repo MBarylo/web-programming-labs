@@ -1,49 +1,110 @@
-// src/App.tsx
 import { useState } from 'react';
+import type { TaskStatus } from './types/task';
+import type { TaskFormData } from './components/TaskForm/TaskForm';
 import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
-import type { Task, TaskStatus } from './types/task';
-import type { TaskFormData } from './components/TaskForm/TaskForm';
+import type { Task, TaskPriority } from './types/task';
+import styles from './App.module.css';
+
+const VARIANT = 1;
+
+const INITIAL_TASKS: Task[] = [
+  {
+    id: `task-${VARIANT}-1`,
+    title: `Задача А-${VARIANT}: налаштування середовища`,
+    description: 'Встановити Node.js, VS Code та необхідні розширення',
+    status: 'done',
+    priority: 'high',
+    createdAt: new Date(2025, 0, (VARIANT % 28) + 1),
+  },
+  {
+    id: `task-${VARIANT}-2`,
+    title: `Задача Б-${VARIANT}: вивчення документації`,
+    description: 'Ознайомитись з офіційною документацією React',
+    status: 'in-progress',
+    priority: 'medium',
+    createdAt: new Date(2025, 1, (VARIANT % 28) + 1),
+  },
+  {
+    id: `task-${VARIANT}-3`,
+    title: `Задача В-${VARIANT}: написати компонент`,
+    description: '',
+    status: 'todo',
+    priority: 'low',
+    createdAt: new Date(2025, 2, (VARIANT % 28) + 1),
+  },
+];
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const [filter, setFilter] = useState<TaskStatus | 'all'>('all');
 
-  // Додаємо нову задачу
   const handleAddTask = (data: TaskFormData) => {
     const newTask: Task = {
-      id: String(Date.now()), // простий id
-      status: 'todo', // статус додаємо тут
-      createdAt: new Date(), // дата створення
-      ...data, // title, description, priority
+      id: crypto.randomUUID(),
+      status: 'todo',
+      createdAt: new Date(),
+      title: data.title,
+      description: data.description,
+      priority: data.priority as TaskPriority,
     };
-
     setTasks((prev) => [...prev, newTask]);
-    console.log('Додано нову задачу:', newTask);
+    console.log('Додано задачу:', newTask);
   };
 
-  // Видалення задачі
-  const handleDelete = (id: string) => {
+  const handleDeleteTask = (id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     console.log('Видалено задачу:', id);
   };
 
-  // Зміна статусу
   const handleStatusChange = (id: string, status: TaskStatus) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
     console.log('Змінено статус:', id, status);
   };
 
+  // Фільтровані задачі
+  const filteredTasks =
+    filter === 'all' ? tasks : tasks.filter((task) => task.status === filter);
+
   return (
-    <div style={{ padding: '16px' }}>
-      <h1 style={{ textAlign: 'center' }}>Мій список задач</h1>
+    <div className={styles.app}>
+      <header className={styles.header}>
+        <h1>Task Manager</h1>
+        <p className={styles.stats}>
+          Всього: {tasks.length} | Нові:{' '}
+          {tasks.filter((t) => t.status === 'todo').length} | В роботі:{' '}
+          {tasks.filter((t) => t.status === 'in-progress').length} | Виконані:{' '}
+          {tasks.filter((t) => t.status === 'done').length}
+        </p>
+      </header>
 
-      <TaskForm onSubmit={handleAddTask} />
+      <main className={styles.main}>
+        <aside className={styles.sidebar}>
+          <TaskForm onSubmit={handleAddTask} />
+        </aside>
 
-      <TaskList
-        tasks={tasks}
-        onDelete={handleDelete}
-        onStatusChange={handleStatusChange}
-      />
+        <section className={styles.content}>
+          <div className={styles.filters}>
+            <label htmlFor="filter">Фільтр:</label>
+            <select
+              id="filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as TaskStatus | 'all')}
+            >
+              <option value="all">Усі</option>
+              <option value="todo">Нові</option>
+              <option value="in-progress">В роботі</option>
+              <option value="done">Виконані</option>
+            </select>
+          </div>
+
+          <TaskList
+            tasks={filteredTasks}
+            onDelete={handleDeleteTask}
+            onStatusChange={handleStatusChange}
+          />
+        </section>
+      </main>
     </div>
   );
 }
