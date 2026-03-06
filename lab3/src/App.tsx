@@ -1,28 +1,44 @@
 import { useState } from 'react';
-import TaskCard from './components/TaskCard/TaskCard';
+import TaskList from './components/TaskList/TaskList';
 import type { Task } from './types/task';
 
-const mockTask: Task = {
-  id: '1',
-  title: 'Тестова задача',
-  description: 'Перевірка відображення картки',
-  status: 'todo',
-  priority: 'high',
-  createdAt: new Date(),
-};
+const initialTasks: Task[] = [
+  {
+    id: '1',
+    title: 'Тестова задача 1',
+    description: 'Перевірка TaskList',
+    status: 'todo',
+    priority: 'high',
+    createdAt: new Date(),
+  },
+  {
+    id: '2',
+    title: 'Тестова задача 2',
+    description: '',
+    status: 'in-progress',
+    priority: 'medium',
+    createdAt: new Date(),
+  },
+];
 
 function App() {
-  const [task, setTask] = useState(mockTask);
+  const [tasks, setTasks] = useState(initialTasks);
+
+  const handleDelete = (id: string) => {
+    console.log('delete', id);
+    setTasks(tasks.filter((t) => t.id !== id));
+  };
+
+  const handleStatusChange = (id: string, status: Task['status']) => {
+    console.log('status', id, status);
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, status } : t)));
+  };
 
   return (
-    <TaskCard
-      task={task}
-      onDelete={(id) => console.log('delete', id)}
-      onStatusChange={(id, status) => {
-        console.log('status callback', id, status);
-        setTask({ ...task, status }); // оновлюємо статус, React перерендерить select
-        console.log('status', id, status); // тепер буде лог
-      }}
+    <TaskList
+      tasks={tasks}
+      onDelete={handleDelete}
+      onStatusChange={handleStatusChange}
     />
   );
 }
