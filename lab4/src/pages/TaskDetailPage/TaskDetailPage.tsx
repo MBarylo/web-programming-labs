@@ -13,10 +13,10 @@ export default function TaskDetailPage({
   onUpdate,
   onDelete,
 }: TaskDetailPageProps) {
-  const { id } = useParams<{ id: string }>(); // отримуємо id з URL
-  const navigate = useNavigate(); // функція для переходів
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-  const task = tasks.find((t) => t.id === id); // знаходимо задачу
+  const task = tasks.find((t) => t.id === id);
 
   if (!task) {
     return (

@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { useState } from 'react';
 import Layout from './components/Layout/Layout';
-import TasksPage from './pages/TasksPage/TasksPage';
+import TasksPage from './pages/TasksPages/TasksPages';
 import TaskDetailPage from './pages/TaskDetailPage/TaskDetailPage';
 import NewTaskPage from './pages/NewTaskPage/NewTaskPage';
-import { INITIAL_TASKS } from './data/initialTasks';
+import { initialTasks } from './data/initialTasks';
 import type { Task } from './types/task';
 
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const addTask = (task: Task) => {
     setTasks((prev) => [...prev, task]);
