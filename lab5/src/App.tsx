@@ -4,7 +4,6 @@ import { todosApi } from './api/todos';
 
 function App() {
   const queryClient = useQueryClient();
-
   const [title, setTitle] = useState('');
 
   const {
@@ -17,19 +16,33 @@ function App() {
     queryFn: todosApi.getAll,
   });
 
-  const { mutate, isPending } = useMutation({
+  const createMutation = useMutation({
     mutationFn: (newTodo: { title: string; completed: boolean }) =>
       todosApi.create(newTodo),
-
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
-
       setTitle('');
     },
   });
 
-  if (isLoading) return <p>Loading...</p>;
+  const updateMutation = useMutation({
+    mutationFn: ({ id, completed }: { id: number; completed: boolean }) =>
+      todosApi.update(id, { completed }),
 
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => todosApi.remove(id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+
+  if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error: {(error as Error).message}</p>;
 
   return (
@@ -38,29 +51,53 @@ function App() {
 
       <div>
         <input
-          type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter todo..."
         />
 
         <button
-          onClick={() => mutate({ title, completed: false })}
-          disabled={isPending || !title.trim()}
+          onClick={() =>
+            createMutation.mutate({
+              title,
+              completed: false,
+            })
+          }
+          disabled={createMutation.isPending || !title.trim()}
         >
-          {isPending ? 'Adding...' : 'Додати'}
+          {createMutation.isPending ? 'Adding...' : 'Додати'}
         </button>
       </div>
 
       <ul>
         {todos?.map((todo) => (
-          <li
-            key={todo.id}
-            style={{
-              textDecoration: todo.completed ? 'line-through' : 'none',
-            }}
-          >
-            {todo.title}
+          <li key={todo.id}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() =>
+                updateMutation.mutate({
+                  id: todo.id,
+                  completed: !todo.completed,
+                })
+              }
+            />
+
+            <span
+              style={{
+                textDecoration: todo.completed ? 'line-through' : 'none',
+                marginLeft: '8px',
+              }}
+            >
+              {todo.title}
+            </span>
+
+            <button
+              onClick={() => deleteMutation.mutate(todo.id)}
+              style={{ marginLeft: '10px' }}
+            >
+              Видалити
+            </button>
           </li>
         ))}
       </ul>

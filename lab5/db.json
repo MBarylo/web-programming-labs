@@ -8,17 +8,12 @@
     {
       "id": 2,
       "title": "Реалізувати useMutation",
-      "completed": false
+      "completed": true
     },
     {
       "id": 3,
       "title": "Налаштувати інвалідацію кешу",
       "completed": true
-    },
-    {
-      "title": "1233333",
-      "completed": false,
-      "id": 4
     }
   ]
 }
