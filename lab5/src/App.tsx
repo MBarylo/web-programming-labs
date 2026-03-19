@@ -1,7 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { todosApi } from './api/todos';
 
 function App() {
+  const queryClient = useQueryClient();
+
+  const [title, setTitle] = useState('');
+
   const {
     data: todos,
     isLoading,
@@ -12,17 +17,41 @@ function App() {
     queryFn: todosApi.getAll,
   });
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
+  const { mutate, isPending } = useMutation({
+    mutationFn: (newTodo: { title: string; completed: boolean }) =>
+      todosApi.create(newTodo),
 
-  if (isError) {
-    return <p>Error: {(error as Error).message}</p>;
-  }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+
+      setTitle('');
+    },
+  });
+
+  if (isLoading) return <p>Loading...</p>;
+
+  if (isError) return <p>Error: {(error as Error).message}</p>;
 
   return (
     <div>
       <h1>Todos</h1>
+
+      <div>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter todo..."
+        />
+
+        <button
+          onClick={() => mutate({ title, completed: false })}
+          disabled={isPending || !title.trim()}
+        >
+          {isPending ? 'Adding...' : 'Додати'}
+        </button>
+      </div>
+
       <ul>
         {todos?.map((todo) => (
           <li
