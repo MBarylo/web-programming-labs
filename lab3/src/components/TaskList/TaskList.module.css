@@ -1,0 +1,14 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* відступи між картками */
+  max-width: 600px; /* максимальна ширина контейнера */
+  margin: 0 auto; /* центр по горизонталі */
+  padding: 16px;
+}
+
+.emptyMessage {
+  text-align: center;
+  font-style: italic;
+  color: #555;
+}
