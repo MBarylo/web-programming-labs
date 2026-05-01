@@ -1,5 +1,6 @@
 import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { TaskStatus, TaskPriority } from '../task.entity';
+import { IsArray } from 'class-validator';
 
 export class UpdateTaskDto {
   @IsOptional()
@@ -17,4 +18,8 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
+
+  @IsOptional()
+  @IsArray()
+  tagIds?: number[];
 }

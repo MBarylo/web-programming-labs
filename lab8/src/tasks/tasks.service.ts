@@ -1,73 +1,77 @@
 import { Injectable } from '@nestjs/common';
-import { Task, TaskStatus, TaskPriority } from './task.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+
+import { Task, TaskStatus } from './task.entity';
+import { Tag } from '../tags/tags.entity';
+
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [
-    {
-      id: 1,
-      title: 'Learn NestJS',
-      description: 'Study basics',
-      status: TaskStatus.TODO,
-      priority: TaskPriority.LOW,
-      createdAt: new Date(),
-    },
-    {
-      id: 2,
-      title: 'Do lab',
-      description: 'Finish lab work',
-      status: TaskStatus.IN_PROGRESS,
-      priority: TaskPriority.MEDIUM,
-      createdAt: new Date(),
-    },
-    {
-      id: 3,
-      title: 'Submit work',
-      description: 'Send to teacher',
-      status: TaskStatus.DONE,
-      priority: TaskPriority.HIGH,
-      createdAt: new Date(),
-    },
-  ];
+  constructor(
+    @InjectRepository(Task)
+    private taskRepo: Repository<Task>,
+
+    @InjectRepository(Tag)
+    private tagRepo: Repository<Tag>,
+  ) {}
 
   findAll() {
-    return this.tasks;
+    return this.taskRepo.find({
+      relations: ['tags'],
+    });
   }
 
   findByStatus(status: TaskStatus) {
-    return this.tasks.filter((t) => t.status === status);
+    return this.taskRepo.find({
+      where: { status },
+      relations: ['tags'],
+    });
   }
 
   findOne(id: number) {
-    return this.tasks.find((t) => t.id === id) || null;
+    return this.taskRepo.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
   }
 
-  create(dto: CreateTaskDto) {
-    const newTask: Task = {
-      id: Date.now(),
+  async create(dto: CreateTaskDto) {
+    let tags: Tag[] = [];
+
+    if (dto.tagIds) {
+      tags = await this.tagRepo.find({
+        where: { id: In(dto.tagIds) },
+      });
+    }
+
+    const task = this.taskRepo.create({
       ...dto,
-      createdAt: new Date(),
-    };
+      tags,
+    });
 
-    this.tasks.push(newTask);
-    return newTask;
+    return this.taskRepo.save(task);
   }
 
-  update(id: number, dto: UpdateTaskDto) {
-    const task = this.findOne(id);
+  async update(id: number, dto: UpdateTaskDto) {
+    const task = await this.findOne(id);
     if (!task) return null;
 
+    if (dto.tagIds) {
+      task.tags = await this.tagRepo.find({
+        where: { id: In(dto.tagIds) },
+      });
+    }
+
     Object.assign(task, dto);
-    return task;
+
+    return this.taskRepo.save(task);
   }
 
-  remove(id: number) {
-    const index = this.tasks.findIndex((t) => t.id === id);
-    if (index === -1) return false;
-
-    this.tasks.splice(index, 1);
-    return true;
+  async remove(id: number) {
+    const result = await this.taskRepo.delete(id);
+    return (result.affected ?? 0) > 0;
   }
 }
