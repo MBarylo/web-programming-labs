@@ -25,6 +25,7 @@ import { TagsModule } from './tags/tags.module';
     }),
 
     TasksModule,
+    TagsModule,
   ],
 })
 export class AppModule {}

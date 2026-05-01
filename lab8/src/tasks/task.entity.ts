@@ -48,5 +48,7 @@ export class Task {
   })
   createdAt!: Date;
 
+  @ManyToMany(() => Tag, (tag) => tag.tasks)
+  @JoinTable()
   tags!: Tag[];
 }
